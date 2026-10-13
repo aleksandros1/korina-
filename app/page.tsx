@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { ref, push } from "firebase/database";
+import { database } from "../firebase";
 
 type Step = 
   | 'WELCOME' 
@@ -21,6 +23,8 @@ export default function KorinaApp() {
   const [activity, setActivity] = useState<string>("");
   const [outfit, setOutfit] = useState<string>("");
   const [xemonaxiasma, setXemonaxiasma] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const resetFlow = () => {
     setCity("");
@@ -28,25 +32,29 @@ export default function KorinaApp() {
     setActivity("");
     setOutfit("");
     setXemonaxiasma("");
+    setIsSaved(false);
     setStep('CITY');
   };
 
-  const generateWhatsAppLink = () => {
-    let text = `Γεια σου Αλέξανδρε! Για το Σάββατο διάλεξα:%0A`;
-    text += `Πόλη: ${city}%0A`;
-    text += `Μέρος: ${location}%0A`;
-    text += `Πλάνο: ${activity}%0A`;
-    
-    if (outfit) {
-      text += `Τι θα φορέσω: ${outfit}%0A`;
+  const saveToFirebase = async () => {
+    setIsSaving(true);
+    try {
+      const responsesRef = ref(database, 'dates');
+      await push(responsesRef, {
+        city,
+        location,
+        activity,
+        outfit: outfit || "Δεν απαιτείται",
+        xemonaxiasma,
+        timestamp: new Date().toISOString()
+      });
+      setIsSaved(true);
+    } catch (error) {
+      console.error("Σφάλμα αποθήκευσης:", error);
+      alert("Κάτι πήγε στραβά με την αποθήκευση. Ξαναδοκίμασε!");
+    } finally {
+      setIsSaving(false);
     }
-    
-    if (xemonaxiasma) {
-      text += `Θα σε ξεμοναχιάσω: ${xemonaxiasma}/10%0A`;
-    }
-    
-    text += `%0AΚανόνισε τα υπόλοιπα!`;
-    return `https://wa.me/?text=${text}`;
   };
 
   return (
@@ -64,7 +72,7 @@ export default function KorinaApp() {
           <div className="pt-8">
             <button 
               onClick={() => setStep('CITY')}
-              className="px-10 py-4 bg-black text-white rounded-full text-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-10 py-4 bg-black text-white rounded-full text-lg font-medium hover:bg-gray-800 transition-colors cursor-pointer"
             >
               Συνέχεια
             </button>
@@ -269,7 +277,7 @@ export default function KorinaApp() {
         </div>
       )}
 
-      {/* 10. Ολοκλήρωση */}
+      {/* 10. Ολοκλήρωση & Αποθήκευση */}
       {step === 'RESULT' && (
         <div className="text-center w-full max-w-sm space-y-8">
           <div className="space-y-2">
@@ -285,14 +293,19 @@ export default function KorinaApp() {
             <p><strong>Ξεμοναχιασμα:</strong> {xemonaxiasma}/10</p>
           </div>
 
-          <a 
-            href={generateWhatsAppLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-4 bg-black text-white rounded-2xl text-xl font-bold hover:bg-gray-800 transition-colors cursor-pointer"
-          >
-            Αποστολή στον Αλέξανδρο
-          </a>
+          {!isSaved ? (
+            <button 
+              onClick={saveToFirebase}
+              disabled={isSaving}
+              className="w-full py-4 bg-black text-white rounded-2xl text-xl font-bold hover:bg-gray-800 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {isSaving ? "Αποστολή..." : "Αποστολή στον Αλέξανδρο"}
+            </button>
+          ) : (
+            <div className="w-full py-4 bg-green-500 text-white rounded-2xl text-xl font-bold">
+              Στάλθηκαν επιτυχώς! ✔️
+            </div>
+          )}
 
           <button 
             onClick={resetFlow}
