@@ -3,20 +3,6 @@ import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { database } from "../firebase";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mynerve, Playpen_Sans } from "next/font/google";
-
-// Γραμματοσειρές Google που υποστηρίζουν 100% Ελληνικά σε iPhone & PC!
-const handwrittenFont = Mynerve({
-  weight: "400",
-  subsets: ["greek", "latin"],
-  display: "swap",
-});
-
-const calligraphyFont = Playpen_Sans({
-  weight: ["400", "600"],
-  subsets: ["greek", "latin"],
-  display: "swap",
-});
 
 type Polaroid = { id: string; url: string; date: string; context: string; timestamp: string; secretNote?: string; };
 type InteractiveCard = { id: string; url: string; question: string; options: string[]; correctOption: number; date: string; context: string; timestamp: string; secretNote?: string; };
@@ -25,10 +11,10 @@ type FeedItem =
   | { type: 'SIMPLE'; data: Polaroid; timestamp: number }
   | { type: 'QUIZ'; data: InteractiveCard; timestamp: number };
 
-const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url);
+const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url || "");
 
 const getCandidateUrls = (rawUrl: string): string[] => {
-  if (!rawUrl) return [];
+  if (!rawUrl || typeof rawUrl !== "string") return [""];
   let clean = rawUrl.trim();
   try { clean = decodeURIComponent(clean); } catch {}
   if (!clean.startsWith('/') && !clean.startsWith('http')) clean = '/' + clean;
@@ -61,7 +47,7 @@ const MediaRenderer = ({ url }: { url: string }) => {
     setAttempt(0);
   }, [url]);
 
-  const currentSrc = candidates[attempt] || url;
+  const currentSrc = candidates[attempt] || url || "";
 
   if (isVideo(currentSrc)) {
     return (
@@ -129,7 +115,7 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
         }}
       ></div>
       
-      <div className={`${calligraphyFont.className} pl-10 md:pl-12 pr-4 text-lg md:text-xl italic text-[#3e2723]`} style={{ lineHeight: "32px" }}>
+      <div className="calligraphy pl-10 md:pl-12 pr-4 text-lg md:text-xl italic text-[#3e2723]" style={{ lineHeight: "32px" }}>
         {text}
       </div>
     </motion.div>
@@ -177,6 +163,8 @@ function QuizPolaroid({ card, scatterClass }: { card: InteractiveCard, scatterCl
     }
   };
 
+  const options = Array.isArray(card.options) ? card.options : [];
+
   return (
     <div className={`w-[92%] max-w-sm mx-auto bg-white p-4 pb-8 polaroid-shadow relative transform transition-transform duration-300 hover:scale-[1.02] md:hover:scale-[1.05] hover:z-50 ${scatterClass}`}>
       <div className="w-full aspect-square bg-gray-100 relative overflow-hidden z-10">
@@ -186,7 +174,7 @@ function QuizPolaroid({ card, scatterClass }: { card: InteractiveCard, scatterCl
         <div className="w-full space-y-3 relative z-10">
           <p className="font-bold text-gray-800 text-center text-[14px] md:text-[15px] leading-tight">{card.question}</p>
           <div className="grid grid-cols-1 gap-2">
-            {card.options.map((opt, idx) => {
+            {options.map((opt, idx) => {
               let btnStyle = "bg-gray-50 border-gray-200 text-gray-700";
               if (selectedOpt === idx) {
                 if (status === 'correct' || solved) btnStyle = "bg-green-500 text-white border-green-500 shadow-sm";
@@ -207,8 +195,8 @@ function QuizPolaroid({ card, scatterClass }: { card: InteractiveCard, scatterCl
           {solved && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.6, ease: "easeOut" }} className="w-full overflow-hidden text-center z-10">
               <div className="pt-4 md:pt-5 mt-4 md:mt-5 border-t-2 border-dashed border-gray-200 w-full">
-                <span className={`${handwrittenFont.className} text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block`}>{card.date}</span>
-                <p className={`${handwrittenFont.className} text-black text-xl md:text-2xl leading-snug`}>{card.context}</p>
+                <span className="handwritten text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block">{card.date}</span>
+                <p className="handwritten text-black text-xl md:text-2xl leading-snug">{card.context}</p>
               </div>
             </motion.div>
           )}
@@ -225,8 +213,8 @@ function SimplePolaroid({ card, scatterClass }: { card: Polaroid, scatterClass: 
         <MediaRenderer url={card.url} />
       </div>
       <div className="mt-5 px-1 md:px-2 flex flex-col items-center justify-center min-h-[120px] md:min-h-[160px] text-center w-full z-10 relative">
-        <span className={`${handwrittenFont.className} text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block`}>{card.date}</span>
-        <p className={`${handwrittenFont.className} text-black text-xl md:text-2xl leading-snug`}>{card.context}</p>
+        <span className="handwritten text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block">{card.date}</span>
+        <p className="handwritten text-black text-xl md:text-2xl leading-snug">{card.context}</p>
       </div>
     </div>
   );
@@ -235,27 +223,33 @@ function SimplePolaroid({ card, scatterClass }: { card: Polaroid, scatterClass: 
 export default function BirthdayApp() {
   const [step, setStep] = useState<'LETTER' | 'GIFT'>('LETTER');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let pData: FeedItem[] = [];
     let cData: FeedItem[] = [];
+    let pLoaded = false;
+    let cLoaded = false;
 
     const mergeData = () => {
-      const merged = [...pData, ...cData].sort((a, b) => a.timestamp - b.timestamp);
+      const merged = [...pData, ...cData].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
       setFeedItems(merged);
+      if (pLoaded && cLoaded) setLoading(false);
     };
 
     onValue(ref(database, 'polaroids'), (snapshot) => {
       const data = snapshot.val();
-      if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k].timestamp).getTime() }));
+      if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
       else pData = [];
+      pLoaded = true;
       mergeData();
     });
 
     onValue(ref(database, 'interactive_cards'), (snapshot) => {
       const data = snapshot.val();
-      if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k].timestamp).getTime() }));
+      if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
       else cData = [];
+      cLoaded = true;
       mergeData();
     });
   }, []);
@@ -264,6 +258,11 @@ export default function BirthdayApp() {
     <div className="min-h-screen bg-pink-50 relative overflow-x-hidden selection:bg-rose-200">
       
       <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Mynerve&family=Playpen+Sans:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        .handwritten { font-family: 'Mynerve', cursive; line-height: 1.35; }
+        .calligraphy { font-family: 'Playpen Sans', cursive; } 
+        
         .paper-shadow { box-shadow: 0 10px 40px -10px rgba(200, 100, 120, 0.2), 0 0 20px rgba(0,0,0,0.05); }
         .polaroid-shadow { box-shadow: 0 15px 35px -5px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.05); }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
@@ -277,7 +276,7 @@ export default function BirthdayApp() {
             className="w-[95%] max-w-md bg-white p-8 md:p-16 rounded-sm paper-shadow relative" style={{ transform: 'rotate(-2deg)' }}
           >
             <div className="text-center space-y-6">
-              <h1 className={`${handwrittenFont.className} text-4xl sm:text-5xl md:text-6xl text-black leading-tight font-bold`}>
+              <h1 className="handwritten text-4xl sm:text-5xl md:text-6xl text-black leading-tight font-bold">
                 Χρόνια πολλά <br/> <span className="text-rose-500">έρωτα μου</span> <br/> ανεπανάληπτε
               </h1>
               <div className="pt-8 md:pt-12">
@@ -292,14 +291,15 @@ export default function BirthdayApp() {
       )}
 
       {step === 'GIFT' && (
-        <div className="min-h-screen py-12 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
+        <div className="min-h-screen py-10 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
           
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} className="text-center space-y-2 mb-16 md:mb-20">
-            <h2 className={`${handwrittenFont.className} text-3xl md:text-4xl text-rose-500 font-bold px-2`}>
-            </h2>
-          </motion.div>
-          
-          <div className="flex flex-col items-center w-full max-w-2xl space-y-16 md:space-y-32">
+          {loading && (
+            <div className="py-20 text-center">
+              <p className="handwritten text-2xl text-rose-400 animate-pulse">Φορτώνουν οι αναμνήσεις μας... ❤️</p>
+            </div>
+          )}
+
+          <div className="flex flex-col items-center w-full max-w-2xl space-y-16 md:space-y-32 mt-4">
             {feedItems.map((item, index) => {
               const scatterClass = SCATTER_CLASSES[index % SCATTER_CLASSES.length];
               const isLeft = index % 2 === 0;
@@ -343,9 +343,9 @@ export default function BirthdayApp() {
               viewport={{ once: true }}
               className="pt-16 pb-20 text-center space-y-4 border-t border-rose-200/50 w-full max-w-sm mt-24 md:mt-32 px-4"
             >
-              <h2 className={`${handwrittenFont.className} text-4xl md:text-5xl text-black font-bold pt-8`}>
+              <h2 className="handwritten text-4xl md:text-5xl text-black font-bold pt-8">
               </h2>
-              <p className={`${handwrittenFont.className} text-3xl md:text-4xl text-rose-500 font-bold`}>
+              <p className="handwritten text-3xl md:text-4xl text-rose-500 font-bold">
               </p>
             </motion.div>
           )}
