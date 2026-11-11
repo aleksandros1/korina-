@@ -3,6 +3,20 @@ import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { database } from "../firebase";
 import { motion, AnimatePresence } from "framer-motion";
+import { Mynerve, Playpen_Sans } from "next/font/google";
+
+// Γραμματοσειρές Google που υποστηρίζουν 100% Ελληνικά σε iPhone & PC!
+const handwrittenFont = Mynerve({
+  weight: "400",
+  subsets: ["greek", "latin"],
+  display: "swap",
+});
+
+const calligraphyFont = Playpen_Sans({
+  weight: ["400", "600"],
+  subsets: ["greek", "latin"],
+  display: "swap",
+});
 
 type Polaroid = { id: string; url: string; date: string; context: string; timestamp: string; secretNote?: string; };
 type InteractiveCard = { id: string; url: string; question: string; options: string[]; correctOption: number; date: string; context: string; timestamp: string; secretNote?: string; };
@@ -115,7 +129,7 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
         }}
       ></div>
       
-      <div className="pl-10 md:pl-12 pr-4 calligraphy text-2xl md:text-4xl text-[#3e2723]" style={{ lineHeight: "32px" }}>
+      <div className={`${calligraphyFont.className} pl-10 md:pl-12 pr-4 text-lg md:text-xl italic text-[#3e2723]`} style={{ lineHeight: "32px" }}>
         {text}
       </div>
     </motion.div>
@@ -193,8 +207,8 @@ function QuizPolaroid({ card, scatterClass }: { card: InteractiveCard, scatterCl
           {solved && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.6, ease: "easeOut" }} className="w-full overflow-hidden text-center z-10">
               <div className="pt-4 md:pt-5 mt-4 md:mt-5 border-t-2 border-dashed border-gray-200 w-full">
-                <span className="handwritten text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block">{card.date}</span>
-                <p className="handwritten text-black text-xl md:text-2xl leading-snug">{card.context}</p>
+                <span className={`${handwrittenFont.className} text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block`}>{card.date}</span>
+                <p className={`${handwrittenFont.className} text-black text-xl md:text-2xl leading-snug`}>{card.context}</p>
               </div>
             </motion.div>
           )}
@@ -211,8 +225,8 @@ function SimplePolaroid({ card, scatterClass }: { card: Polaroid, scatterClass: 
         <MediaRenderer url={card.url} />
       </div>
       <div className="mt-5 px-1 md:px-2 flex flex-col items-center justify-center min-h-[120px] md:min-h-[160px] text-center w-full z-10 relative">
-        <span className="handwritten text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block">{card.date}</span>
-        <p className="handwritten text-black text-xl md:text-2xl leading-snug">{card.context}</p>
+        <span className={`${handwrittenFont.className} text-black text-2xl md:text-3xl font-bold border-b border-gray-200 pb-1 mb-2 md:mb-3 inline-block`}>{card.date}</span>
+        <p className={`${handwrittenFont.className} text-black text-xl md:text-2xl leading-snug`}>{card.context}</p>
       </div>
     </div>
   );
@@ -250,11 +264,6 @@ export default function BirthdayApp() {
     <div className="min-h-screen bg-pink-50 relative overflow-x-hidden selection:bg-rose-200">
       
       <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Dancing+Script:wght@500;700&display=swap');
-        
-        .handwritten { font-family: 'Caveat', cursive; line-height: 1.3; }
-        .calligraphy { font-family: 'Dancing Script', cursive; } 
-        
         .paper-shadow { box-shadow: 0 10px 40px -10px rgba(200, 100, 120, 0.2), 0 0 20px rgba(0,0,0,0.05); }
         .polaroid-shadow { box-shadow: 0 15px 35px -5px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.05); }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
@@ -268,7 +277,7 @@ export default function BirthdayApp() {
             className="w-[95%] max-w-md bg-white p-8 md:p-16 rounded-sm paper-shadow relative" style={{ transform: 'rotate(-2deg)' }}
           >
             <div className="text-center space-y-6">
-              <h1 className="handwritten text-4xl sm:text-5xl md:text-6xl text-black leading-tight font-bold">
+              <h1 className={`${handwrittenFont.className} text-4xl sm:text-5xl md:text-6xl text-black leading-tight font-bold`}>
                 Χρόνια πολλά <br/> <span className="text-rose-500">έρωτα μου</span> <br/> ανεπανάληπτε
               </h1>
               <div className="pt-8 md:pt-12">
@@ -286,7 +295,7 @@ export default function BirthdayApp() {
         <div className="min-h-screen py-12 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
           
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} className="text-center space-y-2 mb-16 md:mb-20">
-            <h2 className="handwritten text-3xl md:text-4xl text-rose-500 font-bold px-2">
+            <h2 className={`${handwrittenFont.className} text-3xl md:text-4xl text-rose-500 font-bold px-2`}>
             </h2>
           </motion.div>
           
@@ -334,9 +343,9 @@ export default function BirthdayApp() {
               viewport={{ once: true }}
               className="pt-16 pb-20 text-center space-y-4 border-t border-rose-200/50 w-full max-w-sm mt-24 md:mt-32 px-4"
             >
-              <h2 className="handwritten text-4xl md:text-5xl text-black font-bold pt-8">
+              <h2 className={`${handwrittenFont.className} text-4xl md:text-5xl text-black font-bold pt-8`}>
               </h2>
-              <p className="handwritten text-3xl md:text-4xl text-rose-500 font-bold">
+              <p className={`${handwrittenFont.className} text-3xl md:text-4xl text-rose-500 font-bold`}>
               </p>
             </motion.div>
           )}
