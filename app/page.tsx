@@ -11,14 +11,71 @@ type FeedItem =
   | { type: 'SIMPLE'; data: Polaroid; timestamp: number }
   | { type: 'QUIZ'; data: InteractiveCard; timestamp: number };
 
-const isVideo = (url: string) => /\.(mp4|webm)$/i.test(url);
+const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url);
 
-const MediaRenderer = ({ url }: { url: string }) => {
-  if (isVideo(url)) return <video src={url} controls playsInline className="w-full h-full object-cover" />;
-  return <img src={url} className="w-full h-full object-cover" alt="Μνήμη" />;
+const getCandidateUrls = (rawUrl: string): string[] => {
+  if (!rawUrl) return [];
+  let clean = rawUrl.trim();
+  try { clean = decodeURIComponent(clean); } catch {}
+  if (!clean.startsWith('/') && !clean.startsWith('http')) clean = '/' + clean;
+
+  const nfc = clean.normalize('NFC');
+  const nfd = clean.normalize('NFD');
+  const enFile = nfc.replace(/Αρχείο|αρχείο/gi, 'file');
+
+  const baseCandidates = Array.from(new Set([enFile, nfc, nfd, clean]));
+  const allCandidates: string[] = [];
+
+  for (const base of baseCandidates) {
+    allCandidates.push(base);
+    const withoutExt = base.replace(/\.(jpg|jpeg|png|heic)$/i, '');
+    if (withoutExt !== base) {
+      allCandidates.push(`${withoutExt}.jpg`);
+      allCandidates.push(`${withoutExt}.jpeg`);
+      allCandidates.push(`${withoutExt}.JPG`);
+      allCandidates.push(`${withoutExt}.JPEG`);
+    }
+  }
+  return Array.from(new Set(allCandidates));
 };
 
-// Προσαρμοσμένα scatter classes για να μην βγαίνουν οι φωτογραφίες εκτός οθόνης στα κινητά
+const MediaRenderer = ({ url }: { url: string }) => {
+  const candidates = getCandidateUrls(url);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    setAttempt(0);
+  }, [url]);
+
+  const currentSrc = candidates[attempt] || url;
+
+  if (isVideo(currentSrc)) {
+    return (
+      <video
+        key={currentSrc}
+        src={currentSrc}
+        controls
+        playsInline
+        onError={() => {
+          if (attempt < candidates.length - 1) setAttempt(a => a + 1);
+        }}
+        className="w-full h-full object-cover"
+      />
+    );
+  }
+
+  return (
+    <img
+      src={currentSrc}
+      alt="Μνήμη"
+      onError={() => {
+        if (attempt < candidates.length - 1) setAttempt(a => a + 1);
+      }}
+      className="w-full h-full object-cover"
+    />
+  );
+};
+
 const SCATTER_CLASSES = [
   "-rotate-2 -translate-x-1 md:-rotate-3 md:-translate-x-12",
   "rotate-2 translate-x-1 md:rotate-6 md:translate-x-16",
@@ -27,7 +84,6 @@ const SCATTER_CLASSES = [
   "-rotate-1 translate-x-0 md:-rotate-2 md:-translate-x-4",
 ];
 
-// --- ΠΑΛΙΟ ΚΙΤΡΙΝΙΣΜΕΝΟ ΧΑΡΤΑΚΙ ΑΠΟ ΤΕΤΡΑΔΙΟ (Mobile Optimized) ---
 const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
   const rotClass = isLeft ? "rotate-2" : "-rotate-3";
     
@@ -66,8 +122,6 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
   );
 };
 
-// --- ΦΑΝΤΕΖΙ ΓΡΑΦΙΚΑ (ΤΡΙΑΝΤΑΦΥΛΛΑ & ΚΑΡΔΙΕΣ) ---
-
 const FancyBloomingRose = ({ className }: { className?: string }) => (
   <motion.svg className={className} viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 4px 8px rgba(225, 29, 72, 0.3))' }}>
     <motion.circle cx="50" cy="40" r="30" fill="none" stroke="#fda4af" strokeWidth="1" strokeDasharray="3 8" initial={{ rotate: 0, opacity: 0 }} whileInView={{ rotate: 360, opacity: 0.8 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "50% 40%" }} />
@@ -91,8 +145,6 @@ const FancyAnimatedHeart = ({ className }: { className?: string }) => (
     <motion.path d="M50 82C50 82 20 55 20 33C20 20 35 20 50 33C65 20 80 20 80 33C80 55 50 82 50 82Z" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-pink-300 opacity-60" initial={{ pathLength: 0, scale: 0.9, transformOrigin: "50% 50%" }} whileInView={{ pathLength: 1, scale: [0.9, 1.05, 0.95, 1] }} transition={{ duration: 2, delay: 1, ease: "easeInOut" }} viewport={{ once: false, amount: 0.3 }} />
   </motion.svg>
 );
-
-// ----------------------------------------------------------------------
 
 function QuizPolaroid({ card, scatterClass }: { card: InteractiveCard, scatterClass: string }) {
   const [solved, setSolved] = useState(false);
@@ -209,7 +261,6 @@ export default function BirthdayApp() {
         .animate-shake { animation: shake 0.3s ease-in-out; }
       `}} />
 
-      {/* --- ΟΘΟΝΗ 1: ΤΟ ΓΡΑΜΜΑ --- */}
       {step === 'LETTER' && (
         <div className="min-h-screen flex items-center justify-center p-4 md:p-6 relative z-10">
           <motion.div 
@@ -231,13 +282,11 @@ export default function BirthdayApp() {
         </div>
       )}
 
-      {/* --- ΟΘΟΝΗ 2: ΤΟ ΔΩΡΟ --- */}
       {step === 'GIFT' && (
         <div className="min-h-screen py-12 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
           
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }} className="text-center space-y-2 mb-16 md:mb-20">
             <h2 className="handwritten text-3xl md:text-4xl text-rose-500 font-bold px-2">
-              {/* Το αφήνω άδειο όπως ακριβώς το είχες στον κώδικά σου! */}
             </h2>
           </motion.div>
           
@@ -249,7 +298,6 @@ export default function BirthdayApp() {
               return (
                 <div key={item.data.id} className="relative w-full flex flex-col items-center">
                   
-                  {/* ANIMATION ΛΟΥΛΟΥΔΙΟΥ/ΚΑΡΔΙΑΣ */}
                   <motion.div 
                     initial={{ rotate: isLeft ? -70 : 70, y: 50, opacity: 0, scale: 0.5 }}
                     whileInView={{ rotate: isLeft ? -15 : 15, y: 0, opacity: 1, scale: 1 }}
@@ -260,7 +308,6 @@ export default function BirthdayApp() {
                     {isLeft ? <FancyAnimatedHeart /> : <FancyBloomingRose />}
                   </motion.div>
                   
-                  {/* Η Polaroid */}
                   <div className="z-10 w-full flex justify-center">
                      {item.type === 'SIMPLE' 
                        ? <SimplePolaroid card={item.data} scatterClass={scatterClass} /> 
@@ -268,7 +315,6 @@ export default function BirthdayApp() {
                      }
                   </div>
 
-                  {/* Το Κιτρινισμένο Χαρτάκι Τετραδίου */}
                   {item.data.secretNote && (
                     <div className={`w-full flex justify-center md:${isLeft ? 'justify-start' : 'justify-end'} px-2 md:px-12`}>
                       <NotebookNote text={item.data.secretNote} isLeft={isLeft} />
@@ -289,10 +335,8 @@ export default function BirthdayApp() {
               className="pt-16 pb-20 text-center space-y-4 border-t border-rose-200/50 w-full max-w-sm mt-24 md:mt-32 px-4"
             >
               <h2 className="handwritten text-4xl md:text-5xl text-black font-bold pt-8">
-                {/* Το αφήνω άδειο όπως ακριβώς το είχες! */}
               </h2>
               <p className="handwritten text-3xl md:text-4xl text-rose-500 font-bold">
-                {/* Το αφήνω άδειο όπως ακριβώς το είχες! */}
               </p>
             </motion.div>
           )}
