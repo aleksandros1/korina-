@@ -1,8 +1,23 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ref, onValue } from "firebase/database";
-import { database } from "../firebase";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getDatabase, ref, onValue } from "firebase/database";
 import { motion, AnimatePresence } from "framer-motion";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBm7o3Nuz5IAj7LnW3oHi4eDc5sdcU1vfw",
+  authDomain: "korina-77d5f.firebaseapp.com",
+  databaseURL: "https://korina-77d5f-default-rtdb.firebaseio.com",
+  projectId: "korina-77d5f",
+  storageBucket: "korina-77d5f.firebasestorage.app",
+  messagingSenderId: "816096752874",
+  appId: "1:816096752874:web:287248b91812c3507d9393",
+  measurementId: "G-GRKQ1X1PW3"
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const database = getDatabase(app);
+const DB_URL = "https://korina-77d5f-default-rtdb.firebaseio.com";
 
 type Polaroid = { id: string; url: string; date: string; context: string; timestamp: string; secretNote?: string; };
 type InteractiveCard = { id: string; url: string; question: string; options: string[]; correctOption: number; date: string; context: string; timestamp: string; secretNote?: string; };
@@ -10,8 +25,6 @@ type InteractiveCard = { id: string; url: string; question: string; options: str
 type FeedItem = 
   | { type: 'SIMPLE'; data: Polaroid; timestamp: number }
   | { type: 'QUIZ'; data: InteractiveCard; timestamp: number };
-
-const DB_URL = "https://korina-77d5f-default-rtdb.firebaseio.com";
 
 const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url || "");
 
@@ -231,7 +244,6 @@ export default function BirthdayApp() {
       setFeedItems(merged);
     };
 
-    // 1. Άμεσο REST Fetch (παρακάμπτει τυχόν μπλοκαρίσματα WebSocket του Safari)
     fetch(`${DB_URL}/.json`)
       .then((res) => res.json())
       .then((root) => {
@@ -254,7 +266,6 @@ export default function BirthdayApp() {
       })
       .catch(() => {});
 
-    // 2. Live ενημέρωση μέσω Firebase SDK
     try {
       const unsubP = onValue(ref(database, 'polaroids'), (snapshot) => {
         const data = snapshot.val();
