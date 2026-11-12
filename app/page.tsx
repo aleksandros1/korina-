@@ -11,6 +11,8 @@ type FeedItem =
   | { type: 'SIMPLE'; data: Polaroid; timestamp: number }
   | { type: 'QUIZ'; data: InteractiveCard; timestamp: number };
 
+const DB_URL = "https://korina-77d5f-default-rtdb.firebaseio.com";
+
 const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url || "");
 
 const getCandidateUrls = (rawUrl: string): string[] => {
@@ -219,7 +221,6 @@ function SimplePolaroid({ card, scatterClass }: { card: Polaroid, scatterClass: 
 export default function BirthdayApp() {
   const [step, setStep] = useState<'LETTER' | 'GIFT'>('LETTER');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [dbError, setDbError] = useState<string | null>(null);
 
   useEffect(() => {
     let pData: FeedItem[] = [];
@@ -230,36 +231,50 @@ export default function BirthdayApp() {
       setFeedItems(merged);
     };
 
-    try {
-      const unsubP = onValue(
-        ref(database, 'polaroids'),
-        (snapshot) => {
-          const data = snapshot.val();
-          if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
-          else pData = [];
-          mergeData();
-        },
-        (err) => setDbError(err.message)
-      );
+    // 1. Άμεσο REST Fetch (παρακάμπτει τυχόν μπλοκαρίσματα WebSocket του Safari)
+    fetch(`${DB_URL}/.json`)
+      .then((res) => res.json())
+      .then((root) => {
+        if (!root) return;
+        if (root.polaroids) {
+          pData = Object.keys(root.polaroids).map((k) => ({
+            type: 'SIMPLE',
+            data: { id: k, ...root.polaroids[k] },
+            timestamp: new Date(root.polaroids[k]?.timestamp || 0).getTime(),
+          }));
+        }
+        if (root.interactive_cards) {
+          cData = Object.keys(root.interactive_cards).map((k) => ({
+            type: 'QUIZ',
+            data: { id: k, ...root.interactive_cards[k] },
+            timestamp: new Date(root.interactive_cards[k]?.timestamp || 0).getTime(),
+          }));
+        }
+        mergeData();
+      })
+      .catch(() => {});
 
-      const unsubC = onValue(
-        ref(database, 'interactive_cards'),
-        (snapshot) => {
-          const data = snapshot.val();
-          if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
-          else cData = [];
-          mergeData();
-        },
-        (err) => setDbError(err.message)
-      );
+    // 2. Live ενημέρωση μέσω Firebase SDK
+    try {
+      const unsubP = onValue(ref(database, 'polaroids'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
+        else pData = [];
+        mergeData();
+      });
+
+      const unsubC = onValue(ref(database, 'interactive_cards'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
+        else cData = [];
+        mergeData();
+      });
 
       return () => {
         unsubP();
         unsubC();
       };
-    } catch (e: any) {
-      setDbError(e?.message || "Firebase connection error");
-    }
+    } catch {}
   }, []);
 
   return (
@@ -304,12 +319,6 @@ export default function BirthdayApp() {
       {step === 'GIFT' && (
         <div className="min-h-screen py-10 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
           
-          {dbError && (
-            <div className="bg-white border border-red-300 text-red-600 p-4 rounded-xl max-w-md text-center text-sm shadow">
-              Σφάλμα βάσης: {dbError}
-            </div>
-          )}
-
           <div className="flex flex-col items-center w-full max-w-2xl space-y-16 md:space-y-32 mt-4">
             {feedItems.map((item, index) => {
               const scatterClass = SCATTER_CLASSES[index % SCATTER_CLASSES.length];
