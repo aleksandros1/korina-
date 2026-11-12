@@ -67,7 +67,7 @@ const MediaRenderer = ({ url }: { url: string }) => {
   return (
     <img
       src={currentSrc}
-      alt="Μνήμη"
+      alt=""
       onError={() => {
         if (attempt < candidates.length - 1) setAttempt(a => a + 1);
       }}
@@ -89,10 +89,10 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
     
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3, type: "spring", bounce: 0.5 }}
-      viewport={{ once: true, margin: "50px" }}
+      initial={{ y: 15 }} 
+      whileInView={{ y: 0 }}
+      transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+      viewport={{ once: true }}
       className={`relative z-20 mt-4 md:mt-8 w-[92%] max-w-[280px] md:max-w-none md:w-80 shadow-xl ${rotClass} mx-auto md:mx-0`}
       style={{
         backgroundColor: "#fdf6e3",
@@ -124,25 +124,25 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
 
 const FancyBloomingRose = ({ className }: { className?: string }) => (
   <motion.svg className={className} viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 4px 8px rgba(225, 29, 72, 0.3))' }}>
-    <motion.circle cx="50" cy="40" r="30" fill="none" stroke="#fda4af" strokeWidth="1" strokeDasharray="3 8" initial={{ rotate: 0, opacity: 0 }} whileInView={{ rotate: 360, opacity: 0.8 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "50% 40%" }} />
+    <motion.circle cx="50" cy="40" r="30" fill="none" stroke="#fda4af" strokeWidth="1" strokeDasharray="3 8" initial={{ rotate: 0 }} whileInView={{ rotate: 360 }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "50% 40%" }} />
     {[ { cx: 20, cy: 30, delay: 0 }, { cx: 80, cy: 20, delay: 0.5 }, { cx: 30, cy: 10, delay: 1 }, { cx: 70, cy: 60, delay: 1.5 } ].map((sparkle, i) => (
-      <motion.circle key={i} cx={sparkle.cx} cy={sparkle.cy} r="1.5" fill="#f43f5e" initial={{ y: 0, opacity: 0 }} whileInView={{ y: -20, opacity: [0, 1, 0] }} transition={{ duration: 2, repeat: Infinity, delay: sparkle.delay, ease: "easeOut" }} />
+      <motion.circle key={i} cx={sparkle.cx} cy={sparkle.cy} r="1.5" fill="#f43f5e" initial={{ y: 0, opacity: 0.8 }} whileInView={{ y: -20, opacity: [0, 1, 0] }} transition={{ duration: 2, repeat: Infinity, delay: sparkle.delay, ease: "easeOut" }} />
     ))}
-    <motion.path d="M50,95 Q45,75 52,55" fill="none" strokeWidth="2.5" strokeLinecap="round" className="stroke-green-500 opacity-90" initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 1 }} transition={{ duration: 1.5, ease: "easeInOut" }} viewport={{ once: false, amount: 0.3 }} />
-    <motion.path d="M48,75 Q35,70 30,60" fill="none" strokeWidth="2" strokeLinecap="round" className="stroke-green-400 opacity-90" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 1, delay: 0.5 }} viewport={{ once: false, amount: 0.3 }} />
-    <motion.path d="M50,85 Q65,80 70,70" fill="none" strokeWidth="2" strokeLinecap="round" className="stroke-green-400 opacity-90" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 1, delay: 0.7 }} viewport={{ once: false, amount: 0.3 }} />
-    <motion.path d="M45,35 C30,35 25,50 35,60 C40,65 55,65 65,60 C75,50 70,35 55,35 C45,35 40,45 50,50" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-red-400" initial={{ pathLength: 0, scale: 0.2, transformOrigin: "50% 60%" }} whileInView={{ pathLength: 1, scale: 1 }} transition={{ duration: 1.5, delay: 0.8, type: "spring", bounce: 0.4 }} viewport={{ once: false, amount: 0.3 }} />
-    <motion.path d="M38,47 C38,40 48,40 52,47 C56,53 48,57 45,55" strokeWidth="1.5" strokeLinecap="round" fill="none" className="stroke-rose-500 opacity-80" initial={{ pathLength: 0, scale: 0.5, transformOrigin: "50% 50%" }} whileInView={{ pathLength: 1, scale: 1 }} transition={{ duration: 1.2, delay: 1.6, ease: "easeOut" }} viewport={{ once: false, amount: 0.3 }} />
+    <motion.path d="M50,95 Q45,75 52,55" fill="none" strokeWidth="2.5" strokeLinecap="round" className="stroke-green-500 opacity-90" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut" }} viewport={{ once: false, amount: 0.2 }} />
+    <motion.path d="M48,75 Q35,70 30,60" fill="none" strokeWidth="2" strokeLinecap="round" className="stroke-green-400 opacity-90" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 1, delay: 0.5 }} viewport={{ once: false, amount: 0.2 }} />
+    <motion.path d="M50,85 Q65,80 70,70" fill="none" strokeWidth="2" strokeLinecap="round" className="stroke-green-400 opacity-90" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 1, delay: 0.7 }} viewport={{ once: false, amount: 0.2 }} />
+    <motion.path d="M45,35 C30,35 25,50 35,60 C40,65 55,65 65,60 C75,50 70,35 55,35 C45,35 40,45 50,50" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-red-400" initial={{ pathLength: 0, scale: 0.2, transformOrigin: "50% 60%" }} whileInView={{ pathLength: 1, scale: 1 }} transition={{ duration: 1.5, delay: 0.8, type: "spring", bounce: 0.4 }} viewport={{ once: false, amount: 0.2 }} />
+    <motion.path d="M38,47 C38,40 48,40 52,47 C56,53 48,57 45,55" strokeWidth="1.5" strokeLinecap="round" fill="none" className="stroke-rose-500 opacity-80" initial={{ pathLength: 0, scale: 0.5, transformOrigin: "50% 50%" }} whileInView={{ pathLength: 1, scale: 1 }} transition={{ duration: 1.2, delay: 1.6, ease: "easeOut" }} viewport={{ once: false, amount: 0.2 }} />
   </motion.svg>
 );
 
 const FancyAnimatedHeart = ({ className }: { className?: string }) => (
   <motion.svg className={className} viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 4px 8px rgba(244, 63, 94, 0.3))' }}>
     {[ { x: 15, y: 40, delay: 0.2 }, { x: 85, y: 30, delay: 0.8 }, { x: 50, y: 15, delay: 1.4 } ].map((sparkle, i) => (
-      <motion.path key={i} d="M5 3.5C5 3.5 1.5 0.5 1.5 -2C1.5 -3.5 3.5 -3.5 5 -2C6.5 -3.5 8.5 -3.5 8.5 -2C8.5 0.5 5 3.5 5 3.5Z" fill="#f43f5e" style={{ transform: `translate(${sparkle.x}px, ${sparkle.y}px) scale(0.5)` }} initial={{ y: 0, opacity: 0 }} whileInView={{ y: -15, opacity: [0, 1, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: sparkle.delay, ease: "easeOut" }} />
+      <motion.path key={i} d="M5 3.5C5 3.5 1.5 0.5 1.5 -2C1.5 -3.5 3.5 -3.5 5 -2C6.5 -3.5 8.5 -3.5 8.5 -2C8.5 0.5 5 3.5 5 3.5Z" fill="#f43f5e" style={{ transform: `translate(${sparkle.x}px, ${sparkle.y}px) scale(0.5)` }} initial={{ y: 0, opacity: 0.8 }} whileInView={{ y: -15, opacity: [0, 1, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: sparkle.delay, ease: "easeOut" }} />
     ))}
-    <motion.path d="M50 85C50 85 15 55 15 30C15 15 35 15 50 30C65 15 85 15 85 30C85 55 50 85 50 85Z" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-rose-400" strokeDasharray="60 2" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }} viewport={{ once: false, amount: 0.3 }} />
-    <motion.path d="M50 82C50 82 20 55 20 33C20 20 35 20 50 33C65 20 80 20 80 33C80 55 50 82 50 82Z" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-pink-300 opacity-60" initial={{ pathLength: 0, scale: 0.9, transformOrigin: "50% 50%" }} whileInView={{ pathLength: 1, scale: [0.9, 1.05, 0.95, 1] }} transition={{ duration: 2, delay: 1, ease: "easeInOut" }} viewport={{ once: false, amount: 0.3 }} />
+    <motion.path d="M50 85C50 85 15 55 15 30C15 15 35 15 50 30C65 15 85 15 85 30C85 55 50 85 50 85Z" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-rose-400" strokeDasharray="60 2" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeInOut" }} viewport={{ once: false, amount: 0.2 }} />
+    <motion.path d="M50 82C50 82 20 55 20 33C20 20 35 20 50 33C65 20 80 20 80 33C80 55 50 82 50 82Z" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" className="stroke-pink-300 opacity-60" initial={{ pathLength: 0, scale: 0.9, transformOrigin: "50% 50%" }} whileInView={{ pathLength: 1, scale: [0.9, 1.05, 0.95, 1] }} transition={{ duration: 2, delay: 1, ease: "easeInOut" }} viewport={{ once: false, amount: 0.2 }} />
   </motion.svg>
 );
 
@@ -223,35 +223,34 @@ function SimplePolaroid({ card, scatterClass }: { card: Polaroid, scatterClass: 
 export default function BirthdayApp() {
   const [step, setStep] = useState<'LETTER' | 'GIFT'>('LETTER');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let pData: FeedItem[] = [];
     let cData: FeedItem[] = [];
-    let pLoaded = false;
-    let cLoaded = false;
 
     const mergeData = () => {
       const merged = [...pData, ...cData].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
       setFeedItems(merged);
-      if (pLoaded && cLoaded) setLoading(false);
     };
 
-    onValue(ref(database, 'polaroids'), (snapshot) => {
+    const unsubP = onValue(ref(database, 'polaroids'), (snapshot) => {
       const data = snapshot.val();
       if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
       else pData = [];
-      pLoaded = true;
       mergeData();
     });
 
-    onValue(ref(database, 'interactive_cards'), (snapshot) => {
+    const unsubC = onValue(ref(database, 'interactive_cards'), (snapshot) => {
       const data = snapshot.val();
       if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
       else cData = [];
-      cLoaded = true;
       mergeData();
     });
+
+    return () => {
+      unsubP();
+      unsubC();
+    };
   }, []);
 
   return (
@@ -260,8 +259,8 @@ export default function BirthdayApp() {
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Mynerve&family=Playpen+Sans:ital,wght@0,400;0,600;1,400&display=swap');
         
-        .handwritten { font-family: 'Mynerve', cursive; line-height: 1.35; }
-        .calligraphy { font-family: 'Playpen Sans', cursive; } 
+        .handwritten { font-family: 'Mynerve', cursive, sans-serif; line-height: 1.35; }
+        .calligraphy { font-family: 'Playpen Sans', cursive, sans-serif; } 
         
         .paper-shadow { box-shadow: 0 10px 40px -10px rgba(200, 100, 120, 0.2), 0 0 20px rgba(0,0,0,0.05); }
         .polaroid-shadow { box-shadow: 0 15px 35px -5px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.05); }
@@ -271,34 +270,31 @@ export default function BirthdayApp() {
 
       {step === 'LETTER' && (
         <div className="min-h-screen flex items-center justify-center p-4 md:p-6 relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-            className="w-[95%] max-w-md bg-white p-8 md:p-16 rounded-sm paper-shadow relative" style={{ transform: 'rotate(-2deg)' }}
+          <div 
+            className="w-[95%] max-w-md bg-white p-8 md:p-16 rounded-sm paper-shadow relative" 
+            style={{ transform: 'rotate(-2deg)' }}
           >
             <div className="text-center space-y-6">
               <h1 className="handwritten text-4xl sm:text-5xl md:text-6xl text-black leading-tight font-bold">
                 Χρόνια πολλά <br/> <span className="text-rose-500">έρωτα μου</span> <br/> ανεπανάληπτε
               </h1>
               <div className="pt-8 md:pt-12">
-                <button onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setStep('GIFT'); }} className="px-6 md:px-8 py-3 bg-transparent border-2 border-rose-400 text-rose-500 rounded-full font-bold tracking-wide hover:bg-rose-50 transition-colors cursor-pointer text-sm md:text-base">
+                <button 
+                  onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setStep('GIFT'); }} 
+                  className="px-6 md:px-8 py-3 bg-transparent border-2 border-rose-400 text-rose-500 rounded-full font-bold tracking-wide hover:bg-rose-50 transition-colors cursor-pointer text-sm md:text-base"
+                >
                   Άνοιξε το ❤️
                 </button>
               </div>
             </div>
             <div className="absolute bottom-0 right-0 w-6 h-6 md:w-8 md:h-8 bg-pink-50 border-l border-t border-gray-100 transform rotate-45 translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4"></div>
-          </motion.div>
+          </div>
         </div>
       )}
 
       {step === 'GIFT' && (
         <div className="min-h-screen py-10 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
           
-          {loading && (
-            <div className="py-20 text-center">
-              <p className="handwritten text-2xl text-rose-400 animate-pulse">Φορτώνουν οι αναμνήσεις μας... ❤️</p>
-            </div>
-          )}
-
           <div className="flex flex-col items-center w-full max-w-2xl space-y-16 md:space-y-32 mt-4">
             {feedItems.map((item, index) => {
               const scatterClass = SCATTER_CLASSES[index % SCATTER_CLASSES.length];
@@ -308,10 +304,10 @@ export default function BirthdayApp() {
                 <div key={item.data.id} className="relative w-full flex flex-col items-center">
                   
                   <motion.div 
-                    initial={{ rotate: isLeft ? -70 : 70, y: 50, opacity: 0, scale: 0.5 }}
-                    whileInView={{ rotate: isLeft ? -15 : 15, y: 0, opacity: 1, scale: 1 }}
-                    transition={{ duration: 2, type: "spring", bounce: 0.4 }}
-                    viewport={{ once: false, amount: 0.2 }}
+                    initial={{ rotate: isLeft ? -45 : 45, y: 20, scale: 0.8 }}
+                    whileInView={{ rotate: isLeft ? -15 : 15, y: 0, scale: 1 }}
+                    transition={{ duration: 1.5, type: "spring", bounce: 0.4 }}
+                    viewport={{ once: false, amount: 0.1 }}
                     className={`absolute ${isLeft ? 'left-0 md:-left-24' : 'right-0 md:-right-24'} top-1/4 w-20 md:w-36 pointer-events-none z-0`}
                   >
                     {isLeft ? <FancyAnimatedHeart /> : <FancyBloomingRose />}
@@ -325,7 +321,7 @@ export default function BirthdayApp() {
                   </div>
 
                   {item.data.secretNote && (
-                    <div className={`w-full flex justify-center md:${isLeft ? 'justify-start' : 'justify-end'} px-2 md:px-12`}>
+                    <div className={`w-full flex justify-center ${isLeft ? 'md:justify-start' : 'md:justify-end'} px-2 md:px-12`}>
                       <NotebookNote text={item.data.secretNote} isLeft={isLeft} />
                     </div>
                   )}
@@ -334,21 +330,6 @@ export default function BirthdayApp() {
               );
             })}
           </div>
-
-          {feedItems.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1 }}
-              viewport={{ once: true }}
-              className="pt-16 pb-20 text-center space-y-4 border-t border-rose-200/50 w-full max-w-sm mt-24 md:mt-32 px-4"
-            >
-              <h2 className="handwritten text-4xl md:text-5xl text-black font-bold pt-8">
-              </h2>
-              <p className="handwritten text-3xl md:text-4xl text-rose-500 font-bold">
-              </p>
-            </motion.div>
-          )}
 
         </div>
       )}
