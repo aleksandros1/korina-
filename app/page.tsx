@@ -290,7 +290,6 @@ export default function BirthdayApp() {
 
   return (
     <div className="min-h-screen bg-pink-50 relative overflow-x-hidden selection:bg-rose-200">
-      
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Mynerve&family=Playpen+Sans:ital,wght@0,400;0,600;1,400&display=swap');
         
@@ -329,7 +328,6 @@ export default function BirthdayApp() {
 
       {step === 'GIFT' && (
         <div className="min-h-screen py-10 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
-          
           <div className="flex flex-col items-center w-full max-w-2xl space-y-16 md:space-y-32 mt-4">
             {feedItems.map((item, index) => {
               const scatterClass = SCATTER_CLASSES[index % SCATTER_CLASSES.length];
@@ -337,7 +335,6 @@ export default function BirthdayApp() {
               
               return (
                 <div key={item.data.id} className="relative w-full flex flex-col items-center">
-                  
                   <motion.div 
                     initial={{ rotate: isLeft ? -45 : 45, y: 20, scale: 0.8 }}
                     whileInView={{ rotate: isLeft ? -15 : 15, y: 0, scale: 1 }}
@@ -360,12 +357,10 @@ export default function BirthdayApp() {
                       <NotebookNote text={item.data.secretNote} isLeft={isLeft} />
                     </div>
                   )}
-
                 </div>
               );
             })}
           </div>
-
         </div>
       )}
     </div>
