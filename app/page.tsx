@@ -88,11 +88,7 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
   const rotClass = isLeft ? "rotate-2" : "-rotate-3";
     
   return (
-    <motion.div 
-      initial={{ y: 15 }} 
-      whileInView={{ y: 0 }}
-      transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
-      viewport={{ once: true }}
+    <div 
       className={`relative z-20 mt-4 md:mt-8 w-[92%] max-w-[280px] md:max-w-none md:w-80 shadow-xl ${rotClass} mx-auto md:mx-0`}
       style={{
         backgroundColor: "#fdf6e3",
@@ -118,7 +114,7 @@ const NotebookNote = ({ text, isLeft }: { text: string, isLeft: boolean }) => {
       <div className="calligraphy pl-10 md:pl-12 pr-4 text-lg md:text-xl italic text-[#3e2723]" style={{ lineHeight: "32px" }}>
         {text}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -223,6 +219,7 @@ function SimplePolaroid({ card, scatterClass }: { card: Polaroid, scatterClass: 
 export default function BirthdayApp() {
   const [step, setStep] = useState<'LETTER' | 'GIFT'>('LETTER');
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   useEffect(() => {
     let pData: FeedItem[] = [];
@@ -233,24 +230,36 @@ export default function BirthdayApp() {
       setFeedItems(merged);
     };
 
-    const unsubP = onValue(ref(database, 'polaroids'), (snapshot) => {
-      const data = snapshot.val();
-      if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
-      else pData = [];
-      mergeData();
-    });
+    try {
+      const unsubP = onValue(
+        ref(database, 'polaroids'),
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) pData = Object.keys(data).map(k => ({ type: 'SIMPLE', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
+          else pData = [];
+          mergeData();
+        },
+        (err) => setDbError(err.message)
+      );
 
-    const unsubC = onValue(ref(database, 'interactive_cards'), (snapshot) => {
-      const data = snapshot.val();
-      if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
-      else cData = [];
-      mergeData();
-    });
+      const unsubC = onValue(
+        ref(database, 'interactive_cards'),
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) cData = Object.keys(data).map(k => ({ type: 'QUIZ', data: {id: k, ...data[k]}, timestamp: new Date(data[k]?.timestamp || 0).getTime() }));
+          else cData = [];
+          mergeData();
+        },
+        (err) => setDbError(err.message)
+      );
 
-    return () => {
-      unsubP();
-      unsubC();
-    };
+      return () => {
+        unsubP();
+        unsubC();
+      };
+    } catch (e: any) {
+      setDbError(e?.message || "Firebase connection error");
+    }
   }, []);
 
   return (
@@ -295,6 +304,12 @@ export default function BirthdayApp() {
       {step === 'GIFT' && (
         <div className="min-h-screen py-10 md:py-16 px-2 md:px-8 relative z-10 flex flex-col items-center">
           
+          {dbError && (
+            <div className="bg-white border border-red-300 text-red-600 p-4 rounded-xl max-w-md text-center text-sm shadow">
+              Σφάλμα βάσης: {dbError}
+            </div>
+          )}
+
           <div className="flex flex-col items-center w-full max-w-2xl space-y-16 md:space-y-32 mt-4">
             {feedItems.map((item, index) => {
               const scatterClass = SCATTER_CLASSES[index % SCATTER_CLASSES.length];
